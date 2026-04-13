@@ -28,7 +28,7 @@ const ShivRam = {
   title       : "Full Stack Developer & CEO",
   company     : "CodingNovas — EdTech + Software Solutions 🏢",
   location    : "Jaipur, Rajasthan 🇮🇳",
-  education   : "BCA | Assistant Professor @ JECRC University",
+  education   : "B.Tech | Assistant Professor @ JECRC University",
   currentFocus: ["Scalable Web Apps", "EdTech Products", "Global Client Solutions"],
   openTo      : ["Freelance", "Remote Roles", "Tech Collaborations"],
   funFact     : "I debug code AND mentor the next gen of devs 🧠⚡",
