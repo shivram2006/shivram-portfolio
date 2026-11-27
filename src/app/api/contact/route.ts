@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const toEmail = process.env.CONTACT_TO_EMAIL || "hello@codingnovas.com";
+    const toEmail = process.env.CONTACT_TO_EMAIL || "sharmashivram2006@gmail.com";
     const fromEmail = process.env.CONTACT_FROM_EMAIL || "portfolio@codingnovas.com";
 
     // Option 1: Resend API (recommended on Vercel)

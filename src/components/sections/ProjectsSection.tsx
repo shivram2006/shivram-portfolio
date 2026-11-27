@@ -105,22 +105,14 @@ function ProjectCard({
 
         <div className="mt-7 flex flex-wrap items-center gap-3 border-t border-slate-200/80 pt-5 dark:border-white/10">
           <a
-            href={project.liveUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-full bg-slate-900 px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-blue-600 dark:bg-white dark:text-slate-900 dark:hover:bg-blue-500 dark:hover:text-white"
-          >
-            <span>Live Demo</span>
-            <ArrowUpRight className="h-3.5 w-3.5" />
-          </a>
-          <a
             href={project.githubUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-full border border-slate-300 px-5 py-2.5 text-xs font-semibold text-slate-700 transition hover:border-blue-500/50 hover:text-blue-600 dark:border-white/15 dark:text-slate-300 dark:hover:text-white"
+            className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-blue-600 dark:bg-white dark:text-slate-900 dark:hover:bg-blue-500 dark:hover:text-white"
           >
             <Github className="h-3.5 w-3.5" />
-            <span>GitHub</span>
+            <span>View on GitHub</span>
+            <ArrowUpRight className="h-3.5 w-3.5" />
           </a>
         </div>
       </div>
