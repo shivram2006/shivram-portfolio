@@ -53,7 +53,7 @@ function CharacterReveal({
 }
 
 export function HeroSection() {
-  const [mousePos, setMousePos] = useState({ x: 50, y: 40 });
+  const [mousePos, setMousePos] = useState({ x: 35, y: 45 });
   const prefersReducedMotion = useReducedMotion();
 
   const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
@@ -72,159 +72,138 @@ export function HeroSection() {
     <section
       id="home"
       onMouseMove={handleMouseMove}
-      className="relative flex min-h-screen items-center overflow-hidden pb-20 pt-28"
+      className="relative flex min-h-screen items-center overflow-hidden bg-[#08090D] pb-20 pt-28 text-white"
     >
-      {/* Interactive Mouse-Following Radial Glow */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-20 transition-opacity duration-500"
-        style={{
-          background: `radial-gradient(620px circle at ${mousePos.x}% ${mousePos.y}%, rgba(59, 130, 246, 0.14), rgba(139, 92, 246, 0.06) 40%, transparent 75%)`,
-        }}
-      />
+      {/* Full-Bleed Background Video — subject positioned on the right side next to text */}
+      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+        <video
+          src="/videos/hero-video.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+          className="h-full w-full object-cover object-[70%_22%] lg:translate-x-[14%] lg:scale-[1.06] lg:object-center"
+        />
 
-      {/* Subtle Ambient Orbs */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -left-32 top-24 -z-20 h-96 w-96 rounded-full bg-blue-600/15 blur-[120px]"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute bottom-10 right-0 -z-20 h-96 w-96 rounded-full bg-violet-600/15 blur-[130px]"
-      />
-      <div
-        aria-hidden="true"
-        className="bg-grid-pattern pointer-events-none absolute inset-0 -z-30 opacity-60"
-      />
+        {/* Left-to-right cinematic gradient scrim for crisp text legibility */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-gradient-to-r from-[#08090D] via-[#08090D]/75 to-transparent lg:via-[#08090D]/60"
+        />
 
-      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid items-center gap-10 lg:grid-cols-12 lg:gap-12">
-          {/* Left Column: Typography & CTAs */}
-          <div className="lg:col-span-7">
-            {/* Availability Pill */}
-            <motion.div
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: EASE_PREMIUM }}
-              className="mb-7 inline-flex items-center gap-2.5 rounded-full border border-slate-200/90 bg-white/80 px-4 py-1.5 text-xs font-medium text-slate-700 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-white/5 dark:text-slate-300"
-            >
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
-              </span>
-              <span>{portfolioConfig.brand.availabilityText}</span>
-            </motion.div>
+        {/* Top & bottom subtle vignette so navbar and next section blend smoothly */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-gradient-to-b from-[#08090D]/55 via-transparent to-[#08090D]/90"
+        />
 
-            {/* Main Headline with Word-Safe Character Reveal */}
-            <h1 className="text-4xl font-bold leading-[1.1] tracking-tight text-slate-900 dark:text-white sm:text-5xl xl:text-[3.6rem]">
-              <CharacterReveal text={portfolioConfig.hero.headlineLine1} delayOffset={0.12} />
-              <br />
-              <span className="animate-gradient-text bg-gradient-to-r from-blue-500 via-cyan-400 to-violet-500 bg-clip-text text-transparent">
-                <CharacterReveal text={portfolioConfig.hero.headlineLine2} delayOffset={0.45} />
-              </span>
-            </h1>
+        {/* Interactive Mouse-Following Radial Glow */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 transition-opacity duration-500"
+          style={{
+            background: `radial-gradient(560px circle at ${mousePos.x}% ${mousePos.y}%, rgba(59, 130, 246, 0.16), rgba(139, 92, 246, 0.06) 45%, transparent 75%)`,
+          }}
+        />
+      </div>
 
-            {/* Supporting Text */}
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.75, ease: EASE_PREMIUM }}
-              className="mt-6 max-w-2xl text-base leading-relaxed text-slate-600 dark:text-slate-300 sm:text-lg"
-            >
-              {portfolioConfig.hero.supportingText}
-            </motion.p>
-
-            {/* Role & Company Tag */}
-            <motion.p
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.85, ease: EASE_PREMIUM }}
-              className="mt-3 text-xs font-semibold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400"
-            >
-              {portfolioConfig.brand.designation}
-            </motion.p>
-
-            {/* CTAs */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.95, ease: EASE_PREMIUM }}
-              className="mt-8 flex flex-wrap items-center gap-4"
-            >
-              <MagneticButton
-                onClick={() => scrollToSection("#projects")}
-                className="group inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-blue-600 to-violet-600 px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/25 transition hover:shadow-blue-600/40"
-              >
-                <span>{portfolioConfig.hero.primaryCta}</span>
-                <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-              </MagneticButton>
-
-              <MagneticButton
-                onClick={() => scrollToSection("#contact")}
-                className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white/80 px-7 py-3.5 text-sm font-semibold text-slate-900 backdrop-blur-md transition hover:border-blue-500/50 hover:bg-white dark:border-white/15 dark:bg-white/5 dark:text-white dark:hover:border-blue-400/50 dark:hover:bg-white/10"
-              >
-                <span>{portfolioConfig.hero.secondaryCta}</span>
-              </MagneticButton>
-            </motion.div>
-
-            {/* Social Links */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.7, delay: 1.1 }}
-              className="mt-9 flex items-center gap-3"
-            >
-              {[
-                { icon: Github, href: portfolioConfig.brand.socials.github, label: "GitHub" },
-                { icon: Linkedin, href: portfolioConfig.brand.socials.linkedin, label: "LinkedIn" },
-                { icon: Instagram, href: portfolioConfig.brand.socials.instagram, label: "Instagram" },
-                { icon: Mail, href: `mailto:${portfolioConfig.brand.email}`, label: "Email" },
-              ].map((social) => {
-                const Icon = social.icon;
-                return (
-                  <a
-                    key={social.label}
-                    href={social.href}
-                    target={social.href.startsWith("http") ? "_blank" : undefined}
-                    rel={social.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                    aria-label={social.label}
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white/70 text-slate-600 transition hover:-translate-y-0.5 hover:border-blue-500/50 hover:text-blue-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-400 dark:hover:border-blue-400/40 dark:hover:text-white"
-                  >
-                    <Icon className="h-4 w-4" />
-                  </a>
-                );
-              })}
-            </motion.div>
-          </div>
-
-          {/* Right Column: Framed Hero Video */}
+      {/* Foreground Content on Left */}
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="max-w-2xl lg:max-w-[54%]">
+          {/* Availability Pill */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.94, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.35, ease: EASE_PREMIUM }}
-            className="lg:col-span-5"
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: EASE_PREMIUM }}
+            className="mb-7 inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-black/40 px-4 py-1.5 text-xs font-medium text-slate-200 backdrop-blur-md"
           >
-            <div className="group relative mx-auto max-w-lg lg:max-w-none">
-              <div
-                aria-hidden="true"
-                className="absolute -inset-1.5 rounded-[2rem] bg-gradient-to-tr from-blue-600/40 via-cyan-400/30 to-violet-600/40 opacity-60 blur-xl transition duration-500 group-hover:opacity-90"
-              />
-              <div className="relative overflow-hidden rounded-[1.75rem] border border-slate-200/80 bg-[#0B0D14] shadow-2xl dark:border-white/15">
-                <video
-                  src="/videos/hero-video.mp4"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  preload="auto"
-                  className="aspect-[4/3] w-full object-cover"
-                />
-                <div
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#08090D]/35 via-transparent to-transparent"
-                />
-              </div>
-            </div>
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
+            </span>
+            <span>{portfolioConfig.brand.availabilityText}</span>
+          </motion.div>
+
+          {/* Main Headline */}
+          <h1 className="text-4xl font-bold leading-[1.08] tracking-tight text-white sm:text-5xl xl:text-[3.75rem]">
+            <CharacterReveal text={portfolioConfig.hero.headlineLine1} delayOffset={0.12} />
+            <br />
+            <span className="animate-gradient-text bg-gradient-to-r from-blue-400 via-cyan-300 to-violet-400 bg-clip-text text-transparent">
+              <CharacterReveal text={portfolioConfig.hero.headlineLine2} delayOffset={0.45} />
+            </span>
+          </h1>
+
+          {/* Supporting Text */}
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.75, ease: EASE_PREMIUM }}
+            className="mt-6 max-w-xl text-base leading-relaxed text-slate-200 sm:text-lg"
+          >
+            {portfolioConfig.hero.supportingText}
+          </motion.p>
+
+          {/* Role & Company Tag */}
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.85, ease: EASE_PREMIUM }}
+            className="mt-3 text-xs font-semibold uppercase tracking-[0.2em] text-blue-400"
+          >
+            {portfolioConfig.brand.designation}
+          </motion.p>
+
+          {/* CTAs */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.95, ease: EASE_PREMIUM }}
+            className="mt-8 flex flex-wrap items-center gap-4"
+          >
+            <MagneticButton
+              onClick={() => scrollToSection("#projects")}
+              className="group inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-blue-600 to-violet-600 px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/30 transition hover:shadow-blue-600/50"
+            >
+              <span>{portfolioConfig.hero.primaryCta}</span>
+              <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+            </MagneticButton>
+
+            <MagneticButton
+              onClick={() => scrollToSection("#contact")}
+              className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-7 py-3.5 text-sm font-semibold text-white backdrop-blur-md transition hover:border-blue-400/60 hover:bg-white/20"
+            >
+              <span>{portfolioConfig.hero.secondaryCta}</span>
+            </MagneticButton>
+          </motion.div>
+
+          {/* Social Links */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.7, delay: 1.1 }}
+            className="mt-9 flex items-center gap-3"
+          >
+            {[
+              { icon: Github, href: portfolioConfig.brand.socials.github, label: "GitHub" },
+              { icon: Linkedin, href: portfolioConfig.brand.socials.linkedin, label: "LinkedIn" },
+              { icon: Instagram, href: portfolioConfig.brand.socials.instagram, label: "Instagram" },
+              { icon: Mail, href: `mailto:${portfolioConfig.brand.email}`, label: "Email" },
+            ].map((social) => {
+              const Icon = social.icon;
+              return (
+                <a
+                  key={social.label}
+                  href={social.href}
+                  target={social.href.startsWith("http") ? "_blank" : undefined}
+                  rel={social.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                  aria-label={social.label}
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/35 text-slate-300 backdrop-blur-md transition hover:-translate-y-0.5 hover:border-blue-400/60 hover:text-white"
+                >
+                  <Icon className="h-4 w-4" />
+                </a>
+              );
+            })}
           </motion.div>
         </div>
       </div>
@@ -237,7 +216,7 @@ export function HeroSection() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.25, duration: 0.6 }}
-        className="absolute bottom-6 left-1/2 flex -translate-x-1/2 flex-col items-center gap-2 text-xs font-medium uppercase tracking-[0.2em] text-slate-500 transition hover:text-blue-500 dark:text-slate-400"
+        className="absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-2 text-xs font-medium uppercase tracking-[0.2em] text-slate-300 transition hover:text-blue-400"
       >
         <span>Scroll</span>
         <motion.span
