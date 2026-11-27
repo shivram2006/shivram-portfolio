@@ -84,6 +84,11 @@ export default function RootLayout({
 
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
+      <head>
+        {/* Preload hero videos so they start playing instantly on page load */}
+        <link rel="preload" href="/videos/hero-video.mp4" as="video" type="video/mp4" />
+        <link rel="preload" href="/videos/hero-video-light.mp4" as="video" type="video/mp4" />
+      </head>
       <body className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}>
         <script
           type="application/ld+json"

@@ -57,7 +57,6 @@ function CharacterReveal({
 
 export function HeroSection() {
   const [mousePos, setMousePos] = useState({ x: 35, y: 45 });
-  const [videoPlaying, setVideoPlaying] = useState(false);
   const prefersReducedMotion = useReducedMotion();
   const { theme } = useTheme();
   const isLight = theme === "light";
@@ -150,11 +149,12 @@ export function HeroSection() {
             isLight ? "brightness-105 contrast-105" : "brightness-110 contrast-105"
           }`}
         />
-        {/* Video on top of poster — invisible until it starts playing */}
+        {/* Video on top of poster — plays immediately at original speed, poster underneath as fallback */}
         <video
           ref={mobileVideoRef}
           key={isLight ? "mobile-light" : "mobile-dark"}
           src={isLight ? "/videos/hero-video-light.mp4" : "/videos/hero-video.mp4"}
+          poster={isLight ? "/images/hero-mobile-light.jpg" : "/images/hero-mobile-dark.jpg"}
           autoPlay
           loop
           muted
@@ -164,7 +164,6 @@ export function HeroSection() {
           disableRemotePlayback
           controlsList="nodownload noplaybackrate noremoteplayback"
           preload="auto"
-          onPlaying={() => setVideoPlaying(true)}
           onCanPlay={() => {
             if (mobileVideoRef.current?.paused) {
               mobileVideoRef.current.play().catch(() => {});
@@ -181,9 +180,9 @@ export function HeroSection() {
               mobileVideoRef.current.play().catch(() => {});
             }
           }}
-          className={`hero-bg-video absolute inset-0 h-full w-full object-cover object-[50%_22%] transition-opacity duration-500 lg:hidden ${
-            videoPlaying ? "opacity-100" : "opacity-0"
-          } ${isLight ? "brightness-105 contrast-105" : "brightness-110 contrast-105"}`}
+          className={`hero-bg-video absolute inset-0 h-full w-full object-cover object-[50%_22%] lg:hidden ${
+            isLight ? "brightness-105 contrast-105" : "brightness-110 contrast-105"
+          }`}
         />
         {/* Touch-blocking overlay — prevents iOS from showing native play button */}
         <div className="absolute inset-0 z-10 lg:hidden" aria-hidden="true" />
