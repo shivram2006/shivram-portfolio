@@ -55,63 +55,188 @@ function CharacterReveal({
   );
 }
 
+/**
+ * Mobile Canvas Video — renders a hidden &lt;video&gt; to a &lt;canvas&gt; via
+ * requestAnimationFrame so iOS Safari NEVER shows a native play button.
+ * Falls back to poster image if autoplay is blocked.
+ */
+function MobileCanvasVideo({
+  src,
+  poster,
+  brightnessClass,
+}: {
+  src: string;
+  poster: string;
+  brightnessClass: string;
+}) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const rafRef = useRef<number>(0);
+  const [showPoster, setShowPoster] = useState(true);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas) return;
+
+    const ctx = canvas.getContext("2d", { alpha: false });
+    if (!ctx) return;
+
+    let drawing = false;
+
+    const drawFrame = () => {
+      if (!video || video.paused || video.ended) {
+        drawing = false;
+        return;
+      }
+      // Set canvas internal resolution to match video (once)
+      if (canvas.width !== video.videoWidth && video.videoWidth > 0) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+      }
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      rafRef.current = requestAnimationFrame(drawFrame);
+    };
+
+    const startDrawing = () => {
+      setShowPoster(false);
+      if (!drawing) {
+        drawing = true;
+        rafRef.current = requestAnimationFrame(drawFrame);
+      }
+    };
+
+    // Set attributes imperatively for iOS
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playsInline = true;
+    video.loop = true;
+
+    video.addEventListener("playing", startDrawing);
+
+    // Handle pause/resume
+    const onPause = () => {
+      if (!document.hidden && video) {
+        video.play().catch(() => {});
+      }
+    };
+    video.addEventListener("pause", onPause);
+
+    // Handle loop restart
+    const onEnded = () => {
+      if (video) {
+        video.currentTime = 0;
+        video.play().catch(() => {});
+      }
+    };
+    video.addEventListener("ended", onEnded);
+
+    // Try autoplay
+    const tryPlay = () => {
+      video.muted = true;
+      video.play().catch(() => {});
+    };
+
+    tryPlay();
+
+    // Retry on visibility change and first interaction
+    const onVisibility = () => {
+      if (!document.hidden) tryPlay();
+    };
+    const onInteract = () => tryPlay();
+
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("touchstart", onInteract, { once: true, passive: true });
+    window.addEventListener("pointerdown", onInteract, { once: true, passive: true });
+    window.addEventListener("scroll", onInteract, { once: true, passive: true });
+
+    return () => {
+      cancelAnimationFrame(rafRef.current);
+      drawing = false;
+      video.removeEventListener("playing", startDrawing);
+      video.removeEventListener("pause", onPause);
+      video.removeEventListener("ended", onEnded);
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("touchstart", onInteract);
+      window.removeEventListener("pointerdown", onInteract);
+      window.removeEventListener("scroll", onInteract);
+    };
+  }, [src]);
+
+  return (
+    <>
+      {/* Poster fallback — shown until canvas starts drawing */}
+      {showPoster && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={poster}
+          alt="Shiv Ram Sharma"
+          loading="eager"
+          decoding="async"
+          className={`absolute inset-0 h-full w-full object-cover object-[50%_22%] ${brightnessClass}`}
+        />
+      )}
+      {/* Canvas renders video frames — no native controls ever */}
+      <canvas
+        ref={canvasRef}
+        className={`absolute inset-0 h-full w-full object-cover object-[50%_22%] ${brightnessClass}`}
+      />
+      {/* Hidden video element — feeds frames to canvas, never visible */}
+      <video
+        ref={videoRef}
+        src={src}
+        muted
+        playsInline
+        loop
+        autoPlay
+        preload="auto"
+        className="pointer-events-none invisible absolute h-0 w-0"
+        tabIndex={-1}
+        aria-hidden="true"
+      />
+    </>
+  );
+}
+
 export function HeroSection() {
   const [mousePos, setMousePos] = useState({ x: 35, y: 45 });
   const prefersReducedMotion = useReducedMotion();
   const { theme } = useTheme();
   const isLight = theme === "light";
   const desktopVideoRef = useRef<HTMLVideoElement>(null);
-  const mobileVideoRef = useRef<HTMLVideoElement>(null);
 
-  /** Shared helper: force a video to play continuously */
+  /** Force a video to play */
   const tryPlay = useCallback((video: HTMLVideoElement | null) => {
     if (!video) return;
     video.muted = true;
-    const promise = video.play();
-    if (promise !== undefined) {
-      promise.catch(() => {
-        // Autoplay blocked — poster / static image shown instead
-      });
-    }
+    video.play().catch(() => {});
   }, []);
 
+  /* Desktop video autoplay logic */
   useEffect(() => {
     const desktop = desktopVideoRef.current;
-    const mobile = mobileVideoRef.current;
+    if (!desktop) return;
 
-    // Set attributes imperatively so iOS Safari picks them up before play()
-    [desktop, mobile].forEach((v) => {
-      if (!v) return;
-      v.muted = true;
-      v.defaultMuted = true;
-      v.playsInline = true;
-    });
-
+    desktop.muted = true;
+    desktop.defaultMuted = true;
+    desktop.playsInline = true;
     tryPlay(desktop);
-    tryPlay(mobile);
 
-    const onVisibilityChange = () => {
-      if (!document.hidden) {
-        tryPlay(desktop);
-        tryPlay(mobile);
-      }
+    const onVisibility = () => {
+      if (!document.hidden) tryPlay(desktop);
     };
+    const onInteract = () => tryPlay(desktop);
 
-    const onFirstInteraction = () => {
-      tryPlay(desktop);
-      tryPlay(mobile);
-    };
-
-    document.addEventListener("visibilitychange", onVisibilityChange);
-    window.addEventListener("touchstart", onFirstInteraction, { once: true, passive: true });
-    window.addEventListener("pointerdown", onFirstInteraction, { once: true, passive: true });
-    window.addEventListener("scroll", onFirstInteraction, { once: true, passive: true });
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("touchstart", onInteract, { once: true, passive: true });
+    window.addEventListener("pointerdown", onInteract, { once: true, passive: true });
+    window.addEventListener("scroll", onInteract, { once: true, passive: true });
 
     return () => {
-      document.removeEventListener("visibilitychange", onVisibilityChange);
-      window.removeEventListener("touchstart", onFirstInteraction);
-      window.removeEventListener("pointerdown", onFirstInteraction);
-      window.removeEventListener("scroll", onFirstInteraction);
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("touchstart", onInteract);
+      window.removeEventListener("pointerdown", onInteract);
+      window.removeEventListener("scroll", onInteract);
     };
   }, [isLight, tryPlay]);
 
@@ -134,58 +259,18 @@ export function HeroSection() {
       className="relative flex min-h-screen flex-col justify-center overflow-hidden bg-[#f8fafc] pb-16 pt-20 text-slate-900 transition-colors duration-300 dark:bg-[#08090D] dark:text-white lg:flex-row lg:items-center lg:pb-20 lg:pt-28"
     >
       {/* Responsive Media Container:
-          - Mobile/Tablet (< lg): <video> with poster JPG fallback + touch-blocking overlay = no play button ever
+          - Mobile/Tablet (< lg): Canvas-rendered video — zero native controls, no play button ever
           - Desktop (lg+): Full-HD background <video> positioned on the right side next to text */}
       <div className="pointer-events-none relative z-0 aspect-[16/10] w-full overflow-hidden sm:aspect-[16/9] lg:absolute lg:inset-0 lg:aspect-auto lg:h-full">
-        {/* ===== MOBILE / TABLET VIDEO ===== */}
-        {/* Static poster image shown immediately; video plays on top once loaded */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={isLight ? "/images/hero-mobile-light.jpg" : "/images/hero-mobile-dark.jpg"}
-          alt="Shiv Ram Sharma"
-          loading="eager"
-          decoding="async"
-          className={`absolute inset-0 h-full w-full object-cover object-[50%_22%] lg:hidden ${
-            isLight ? "brightness-105 contrast-105" : "brightness-110 contrast-105"
-          }`}
-        />
-        {/* Video on top of poster — plays immediately at original speed, poster underneath as fallback */}
-        <video
-          ref={mobileVideoRef}
-          key={isLight ? "mobile-light" : "mobile-dark"}
-          src={isLight ? "/videos/hero-video-light.mp4" : "/videos/hero-video.mp4"}
-          poster={isLight ? "/images/hero-mobile-light.jpg" : "/images/hero-mobile-dark.jpg"}
-          autoPlay
-          loop
-          muted
-          playsInline
-          controls={false}
-          disablePictureInPicture
-          disableRemotePlayback
-          controlsList="nodownload noplaybackrate noremoteplayback"
-          preload="auto"
-          onCanPlay={() => {
-            if (mobileVideoRef.current?.paused) {
-              mobileVideoRef.current.play().catch(() => {});
-            }
-          }}
-          onPause={() => {
-            if (!document.hidden && mobileVideoRef.current) {
-              mobileVideoRef.current.play().catch(() => {});
-            }
-          }}
-          onEnded={() => {
-            if (mobileVideoRef.current) {
-              mobileVideoRef.current.currentTime = 0;
-              mobileVideoRef.current.play().catch(() => {});
-            }
-          }}
-          className={`hero-bg-video absolute inset-0 h-full w-full object-cover object-[50%_22%] lg:hidden ${
-            isLight ? "brightness-105 contrast-105" : "brightness-110 contrast-105"
-          }`}
-        />
-        {/* Touch-blocking overlay — prevents iOS from showing native play button */}
-        <div className="absolute inset-0 z-10 lg:hidden" aria-hidden="true" />
+        {/* ===== MOBILE / TABLET: CANVAS VIDEO ===== */}
+        <div className="absolute inset-0 lg:hidden">
+          <MobileCanvasVideo
+            key={isLight ? "canvas-light" : "canvas-dark"}
+            src={isLight ? "/videos/hero-video-light.mp4" : "/videos/hero-video.mp4"}
+            poster={isLight ? "/images/hero-mobile-light.jpg" : "/images/hero-mobile-dark.jpg"}
+            brightnessClass={isLight ? "brightness-105 contrast-105" : "brightness-110 contrast-105"}
+          />
+        </div>
 
         {/* ===== DESKTOP VIDEO ===== */}
         <video
