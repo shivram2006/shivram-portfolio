@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowDown, ArrowRight, Github, Instagram, Linkedin, Mail } from "lucide-react";
 import { portfolioConfig } from "@/config/portfolio.config";
@@ -57,41 +57,50 @@ function CharacterReveal({
 
 export function HeroSection() {
   const [mousePos, setMousePos] = useState({ x: 35, y: 45 });
+  const [videoPlaying, setVideoPlaying] = useState(false);
   const prefersReducedMotion = useReducedMotion();
   const { theme } = useTheme();
   const isLight = theme === "light";
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const desktopVideoRef = useRef<HTMLVideoElement>(null);
+  const mobileVideoRef = useRef<HTMLVideoElement>(null);
+
+  /** Shared helper: force a video to play continuously */
+  const tryPlay = useCallback((video: HTMLVideoElement | null) => {
+    if (!video) return;
+    video.muted = true;
+    const promise = video.play();
+    if (promise !== undefined) {
+      promise.catch(() => {
+        // Autoplay blocked — poster / static image shown instead
+      });
+    }
+  }, []);
 
   useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
+    const desktop = desktopVideoRef.current;
+    const mobile = mobileVideoRef.current;
 
-    // Ensure iOS Safari recognizes muted + inline properties before attempting play
-    video.muted = true;
-    video.defaultMuted = true;
-    video.playsInline = true;
+    // Set attributes imperatively so iOS Safari picks them up before play()
+    [desktop, mobile].forEach((v) => {
+      if (!v) return;
+      v.muted = true;
+      v.defaultMuted = true;
+      v.playsInline = true;
+    });
 
-    const tryPlay = () => {
-      if (!video) return;
-      video.muted = true;
-      const promise = video.play();
-      if (promise !== undefined) {
-        promise.catch(() => {
-          // Autoplay blocked (e.g., iOS Low Power Mode) until first user gesture
-        });
-      }
-    };
-
-    tryPlay();
+    tryPlay(desktop);
+    tryPlay(mobile);
 
     const onVisibilityChange = () => {
       if (!document.hidden) {
-        tryPlay();
+        tryPlay(desktop);
+        tryPlay(mobile);
       }
     };
 
     const onFirstInteraction = () => {
-      tryPlay();
+      tryPlay(desktop);
+      tryPlay(mobile);
     };
 
     document.addEventListener("visibilitychange", onVisibilityChange);
@@ -105,7 +114,7 @@ export function HeroSection() {
       window.removeEventListener("pointerdown", onFirstInteraction);
       window.removeEventListener("scroll", onFirstInteraction);
     };
-  }, [isLight]);
+  }, [isLight, tryPlay]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
     if (prefersReducedMotion) return;
@@ -126,24 +135,62 @@ export function HeroSection() {
       className="relative flex min-h-screen flex-col justify-center overflow-hidden bg-[#f8fafc] pb-16 pt-20 text-slate-900 transition-colors duration-300 dark:bg-[#08090D] dark:text-white lg:flex-row lg:items-center lg:pb-20 lg:pt-28"
     >
       {/* Responsive Media Container:
-          - Mobile/Tablet (< lg): Static JPG hero image — zero chance of play button or pause issues on any device
+          - Mobile/Tablet (< lg): <video> with poster JPG fallback + touch-blocking overlay = no play button ever
           - Desktop (lg+): Full-HD background <video> positioned on the right side next to text */}
       <div className="pointer-events-none relative z-0 aspect-[16/10] w-full overflow-hidden sm:aspect-[16/9] lg:absolute lg:inset-0 lg:aspect-auto lg:h-full">
-        {/* Mobile & Tablet Static Hero Image (no animated WebP / no video = no play button ever) */}
+        {/* ===== MOBILE / TABLET VIDEO ===== */}
+        {/* Static poster image shown immediately; video plays on top once loaded */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={isLight ? "/images/hero-mobile-light.jpg" : "/images/hero-mobile-dark.jpg"}
           alt="Shiv Ram Sharma"
           loading="eager"
           decoding="async"
-          className={`h-full w-full object-cover object-[50%_22%] lg:hidden ${
+          className={`absolute inset-0 h-full w-full object-cover object-[50%_22%] lg:hidden ${
             isLight ? "brightness-105 contrast-105" : "brightness-110 contrast-105"
           }`}
         />
-
-        {/* Desktop Full-HD Video */}
+        {/* Video on top of poster — invisible until it starts playing */}
         <video
-          ref={videoRef}
+          ref={mobileVideoRef}
+          key={isLight ? "mobile-light" : "mobile-dark"}
+          src={isLight ? "/videos/hero-video-light.mp4" : "/videos/hero-video.mp4"}
+          autoPlay
+          loop
+          muted
+          playsInline
+          controls={false}
+          disablePictureInPicture
+          disableRemotePlayback
+          controlsList="nodownload noplaybackrate noremoteplayback"
+          preload="auto"
+          onPlaying={() => setVideoPlaying(true)}
+          onCanPlay={() => {
+            if (mobileVideoRef.current?.paused) {
+              mobileVideoRef.current.play().catch(() => {});
+            }
+          }}
+          onPause={() => {
+            if (!document.hidden && mobileVideoRef.current) {
+              mobileVideoRef.current.play().catch(() => {});
+            }
+          }}
+          onEnded={() => {
+            if (mobileVideoRef.current) {
+              mobileVideoRef.current.currentTime = 0;
+              mobileVideoRef.current.play().catch(() => {});
+            }
+          }}
+          className={`hero-bg-video absolute inset-0 h-full w-full object-cover object-[50%_22%] transition-opacity duration-500 lg:hidden ${
+            videoPlaying ? "opacity-100" : "opacity-0"
+          } ${isLight ? "brightness-105 contrast-105" : "brightness-110 contrast-105"}`}
+        />
+        {/* Touch-blocking overlay — prevents iOS from showing native play button */}
+        <div className="absolute inset-0 z-10 lg:hidden" aria-hidden="true" />
+
+        {/* ===== DESKTOP VIDEO ===== */}
+        <video
+          ref={desktopVideoRef}
           key={isLight ? "light-video" : "dark-video"}
           src={isLight ? "/videos/hero-video-light.mp4" : "/videos/hero-video.mp4"}
           autoPlay
@@ -156,19 +203,19 @@ export function HeroSection() {
           controlsList="nodownload noplaybackrate noremoteplayback"
           preload="auto"
           onCanPlay={() => {
-            if (videoRef.current?.paused) {
-              videoRef.current.play().catch(() => {});
+            if (desktopVideoRef.current?.paused) {
+              desktopVideoRef.current.play().catch(() => {});
             }
           }}
           onPause={() => {
-            if (!document.hidden && videoRef.current) {
-              videoRef.current.play().catch(() => {});
+            if (!document.hidden && desktopVideoRef.current) {
+              desktopVideoRef.current.play().catch(() => {});
             }
           }}
           onEnded={() => {
-            if (videoRef.current) {
-              videoRef.current.currentTime = 0;
-              videoRef.current.play().catch(() => {});
+            if (desktopVideoRef.current) {
+              desktopVideoRef.current.currentTime = 0;
+              desktopVideoRef.current.play().catch(() => {});
             }
           }}
           className={`hero-bg-video hidden h-full w-full object-cover lg:block lg:translate-x-[15%] lg:scale-[1.04] lg:object-center ${
