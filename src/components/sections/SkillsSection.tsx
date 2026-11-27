@@ -2,20 +2,32 @@
 
 import React, { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { Braces, ShieldCheck, Webhook, Workflow } from "lucide-react";
 import {
-  Braces,
-  Cloud,
-  Code2,
-  Cpu,
-  Database,
-  GitBranch,
-  Globe,
-  Layers,
-  Lock,
-  Server,
-  Terminal,
-  Wrench,
-} from "lucide-react";
+  SiC,
+  SiCplusplus,
+  SiCss,
+  SiDjango,
+  SiDocker,
+  SiExpress,
+  SiGit,
+  SiGithub,
+  SiHtml5,
+  SiJavascript,
+  SiMongodb,
+  SiMysql,
+  SiNextdotjs,
+  SiNodedotjs,
+  SiPostgresql,
+  SiPostman,
+  SiPython,
+  SiReact,
+  SiRedis,
+  SiTailwindcss,
+  SiTypescript,
+} from "react-icons/si";
+import { FaCloud, FaJava } from "react-icons/fa6";
+import { VscVscode } from "react-icons/vsc";
 import {
   portfolioConfig,
   type SkillCategory,
@@ -23,28 +35,39 @@ import {
 } from "@/config/portfolio.config";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 
-function getSkillIcon(skill: SkillItem) {
-  switch (skill.category) {
-    case "Frontend":
-      return skill.name === "Next.js" || skill.name === "React.js" ? Globe : Code2;
-    case "Backend":
-      return skill.name === "Authentication" ? Lock : Server;
-    case "Database":
-      return Database;
-    case "Programming":
-      return skill.name === "Python" || skill.name === "Java" ? Terminal : Cpu;
-    case "Tools & Platforms":
-      if (skill.name === "Git" || skill.name === "GitHub") return GitBranch;
-      if (skill.name === "Cloud Platforms" || skill.name === "Docker") return Cloud;
-      return Wrench;
-    default:
-      return Layers;
-  }
-}
+const SKILL_ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+  HTML5: SiHtml5,
+  CSS3: SiCss,
+  JavaScript: SiJavascript,
+  TypeScript: SiTypescript,
+  "React.js": SiReact,
+  "Next.js": SiNextdotjs,
+  "Tailwind CSS": SiTailwindcss,
+  Django: SiDjango,
+  "Node.js": SiNodedotjs,
+  "Express.js": SiExpress,
+  "REST APIs": Webhook,
+  Authentication: ShieldCheck,
+  "API Integration": Workflow,
+  MongoDB: SiMongodb,
+  PostgreSQL: SiPostgresql,
+  MySQL: SiMysql,
+  Redis: SiRedis,
+  C: SiC,
+  "C++": SiCplusplus,
+  Java: FaJava,
+  Python: SiPython,
+  Git: SiGit,
+  GitHub: SiGithub,
+  Docker: SiDocker,
+  "VS Code": VscVscode,
+  Postman: SiPostman,
+  "Cloud Platforms": FaCloud,
+};
 
 function SkillCard({ skill, index }: { skill: SkillItem; index: number }) {
   const [tilt, setTilt] = useState({ rx: 0, ry: 0 });
-  const Icon = getSkillIcon(skill);
+  const Icon = SKILL_ICON_MAP[skill.name] ?? Braces;
 
   const onMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -76,7 +99,7 @@ function SkillCard({ skill, index }: { skill: SkillItem; index: number }) {
 
       <div className="flex items-start justify-between gap-3">
         <div
-          className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200/80 bg-slate-50 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 dark:border-white/10 dark:bg-white/5"
+          className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200/80 bg-slate-50 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 dark:border-white/10 dark:bg-white/5"
           style={{ color: skill.accent }}
         >
           <Icon className="h-5 w-5" />

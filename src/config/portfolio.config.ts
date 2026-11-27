@@ -159,7 +159,7 @@ export const portfolioConfig = {
       { name: "Next.js", category: "Frontend", level: "Advanced", tagline: "App Router, SSR & Edge", accent: "#A855F7" },
       { name: "Tailwind CSS", category: "Frontend", level: "Advanced", tagline: "Design systems at speed", accent: "#38BDF8" },
       // Backend
-      { name: "Django", category: "Backend", level: "Advanced", tagline: "Full-stack Python web framework", accent: "#092E20" },
+      { name: "Django", category: "Backend", level: "Advanced", tagline: "Full-stack Python web framework", accent: "#44B78B" },
       { name: "Node.js", category: "Backend", level: "Advanced", tagline: "Event-driven server runtime", accent: "#5FA04E" },
       { name: "Express.js", category: "Backend", level: "Advanced", tagline: "Modular API services", accent: "#94A3B8" },
       { name: "REST APIs", category: "Backend", level: "Advanced", tagline: "Clean contract design", accent: "#3B82F6" },
@@ -177,7 +177,7 @@ export const portfolioConfig = {
       { name: "Python", category: "Programming", level: "Proficient", tagline: "Automation, scripting & AI", accent: "#3776AB" },
       // Tools & Platforms
       { name: "Git", category: "Tools & Platforms", level: "Advanced", tagline: "Distributed version control", accent: "#F05032" },
-      { name: "GitHub", category: "Tools & Platforms", level: "Advanced", tagline: "CI/CD, PRs & open source", accent: "#E2E8F0" },
+      { name: "GitHub", category: "Tools & Platforms", level: "Advanced", tagline: "CI/CD, PRs & open source", accent: "#94A3B8" },
       { name: "Docker", category: "Tools & Platforms", level: "Proficient", tagline: "Reproducible containers", accent: "#2496ED" },
       { name: "VS Code", category: "Tools & Platforms", level: "Core", tagline: "Crafted dev environment", accent: "#007ACC" },
       { name: "Postman", category: "Tools & Platforms", level: "Advanced", tagline: "API testing & collections", accent: "#FF6C37" },
