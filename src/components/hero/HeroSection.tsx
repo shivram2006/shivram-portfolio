@@ -126,13 +126,13 @@ export function HeroSection() {
       className="relative flex min-h-screen flex-col justify-center overflow-hidden bg-[#f8fafc] pb-16 pt-20 text-slate-900 transition-colors duration-300 dark:bg-[#08090D] dark:text-white lg:flex-row lg:items-center lg:pb-20 lg:pt-28"
     >
       {/* Responsive Media Container:
-          - Mobile/Tablet (< lg): Animated WebP <img> so iOS Safari & Low Power Mode NEVER pause or show a play button
+          - Mobile/Tablet (< lg): Static JPG hero image — zero chance of play button or pause issues on any device
           - Desktop (lg+): Full-HD background <video> positioned on the right side next to text */}
       <div className="pointer-events-none relative z-0 aspect-[16/10] w-full overflow-hidden sm:aspect-[16/9] lg:absolute lg:inset-0 lg:aspect-auto lg:h-full">
-        {/* Mobile & Tablet Animated WebP */}
+        {/* Mobile & Tablet Static Hero Image (no animated WebP / no video = no play button ever) */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={isLight ? "/videos/hero-mobile-light.webp" : "/videos/hero-mobile-dark.webp"}
+          src={isLight ? "/images/hero-mobile-light.jpg" : "/images/hero-mobile-dark.jpg"}
           alt="Shiv Ram Sharma"
           loading="eager"
           decoding="async"
