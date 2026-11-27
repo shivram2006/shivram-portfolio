@@ -150,11 +150,10 @@ export function SkillsSection() {
                   key={category}
                   type="button"
                   onClick={() => setActiveCategory(category)}
-                  className={`relative rounded-full px-4 py-2 text-xs font-semibold transition ${
-                    active
-                      ? "text-white"
-                      : "border border-slate-200 bg-white/70 text-slate-600 hover:border-blue-500/40 hover:text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:text-white"
-                  }`}
+                  className={`relative rounded-full px-4 py-2 text-xs font-semibold transition ${active
+                    ? "text-white"
+                    : "border border-slate-200 bg-white/70 text-slate-600 hover:border-blue-500/40 hover:text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:text-white"
+                    }`}
                 >
                   {active && (
                     <motion.span
