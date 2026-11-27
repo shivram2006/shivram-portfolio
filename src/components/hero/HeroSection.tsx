@@ -74,7 +74,7 @@ export function HeroSection() {
       onMouseMove={handleMouseMove}
       className="relative flex min-h-screen items-center overflow-hidden bg-[#08090D] pb-20 pt-28 text-white"
     >
-      {/* Full-Bleed Background Video — subject positioned on the right side next to text */}
+      {/* Full-Bleed Background Video — subject positioned clearly on the right side */}
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
         <video
           src="/videos/hero-video.mp4"
@@ -83,19 +83,19 @@ export function HeroSection() {
           muted
           playsInline
           preload="auto"
-          className="h-full w-full object-cover object-[70%_22%] lg:translate-x-[14%] lg:scale-[1.06] lg:object-center"
+          className="h-full w-full object-cover object-[70%_20%] brightness-110 contrast-105 lg:translate-x-[15%] lg:scale-[1.04] lg:object-center"
         />
 
-        {/* Left-to-right cinematic gradient scrim for crisp text legibility */}
+        {/* Subtle left-only gradient scrim behind text so the right side stays crystal clear */}
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-r from-[#08090D] via-[#08090D]/75 to-transparent lg:via-[#08090D]/60"
+          className="absolute inset-y-0 left-0 w-full bg-gradient-to-r from-[#08090D]/85 via-[#08090D]/40 to-transparent lg:w-[62%]"
         />
 
-        {/* Top & bottom subtle vignette so navbar and next section blend smoothly */}
+        {/* Gentle bottom edge blend into the next section */}
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-b from-[#08090D]/55 via-transparent to-[#08090D]/90"
+          className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#08090D] to-transparent"
         />
 
         {/* Interactive Mouse-Following Radial Glow */}
