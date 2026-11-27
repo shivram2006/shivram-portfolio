@@ -62,12 +62,10 @@ function CharacterReveal({
  */
 function MobileCanvasVideo({
   src,
-  fallbackWebp,
   poster,
   brightnessClass,
 }: {
   src: string;
-  fallbackWebp: string;
   poster: string;
   brightnessClass: string;
 }) {
@@ -75,7 +73,6 @@ function MobileCanvasVideo({
   const videoRef = useRef<HTMLVideoElement>(null);
   const rafRef = useRef<number>(0);
   const [showFallback, setShowFallback] = useState(true);
-  const [autoplayBlocked, setAutoplayBlocked] = useState(false);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -86,7 +83,6 @@ function MobileCanvasVideo({
     if (!ctx) return;
 
     let drawing = false;
-    let hasPlayed = false;
 
     const drawFrame = () => {
       if (!video || video.paused || video.ended) {
@@ -102,9 +98,7 @@ function MobileCanvasVideo({
     };
 
     const startDrawing = () => {
-      hasPlayed = true;
       setShowFallback(false);
-      setAutoplayBlocked(false);
       if (!drawing) {
         drawing = true;
         rafRef.current = requestAnimationFrame(drawFrame);
@@ -116,11 +110,18 @@ function MobileCanvasVideo({
     video.playsInline = true;
     video.loop = true;
 
+    const tryPlay = () => {
+      video.muted = true;
+      video.play().catch(() => {});
+    };
+
     video.addEventListener("playing", startDrawing);
+    video.addEventListener("loadeddata", tryPlay);
+    video.addEventListener("canplay", tryPlay);
 
     const onPause = () => {
       if (!document.hidden && video) {
-        video.play().catch(() => {});
+        tryPlay();
       }
     };
     video.addEventListener("pause", onPause);
@@ -128,33 +129,12 @@ function MobileCanvasVideo({
     const onEnded = () => {
       if (video) {
         video.currentTime = 0;
-        video.play().catch(() => {});
+        tryPlay();
       }
     };
     video.addEventListener("ended", onEnded);
 
-    const tryPlay = () => {
-      video.muted = true;
-      const promise = video.play();
-      if (promise !== undefined) {
-        promise.catch(() => {
-          // iOS Low Power Mode or strict autoplay policy blocked <video>:
-          // immediately switch fallback to animated WebP so motion starts with zero interaction.
-          if (!hasPlayed) {
-            setAutoplayBlocked(true);
-          }
-        });
-      }
-    };
-
     tryPlay();
-
-    // If Safari silently holds the video paused without rejecting within 600ms, show animated WebP
-    const fallbackTimer = window.setTimeout(() => {
-      if (!hasPlayed && video.paused) {
-        setAutoplayBlocked(true);
-      }
-    }, 600);
 
     const onVisibility = () => {
       if (!document.hidden) tryPlay();
@@ -167,10 +147,11 @@ function MobileCanvasVideo({
     window.addEventListener("scroll", onInteract, { once: true, passive: true });
 
     return () => {
-      window.clearTimeout(fallbackTimer);
       cancelAnimationFrame(rafRef.current);
       drawing = false;
       video.removeEventListener("playing", startDrawing);
+      video.removeEventListener("loadeddata", tryPlay);
+      video.removeEventListener("canplay", tryPlay);
       video.removeEventListener("pause", onPause);
       video.removeEventListener("ended", onEnded);
       document.removeEventListener("visibilitychange", onVisibility);
@@ -182,18 +163,18 @@ function MobileCanvasVideo({
 
   return (
     <>
-      {/* Fallback shown until canvas starts drawing: animated WebP if autoplay blocked (Low Power Mode), else static poster */}
+      {/* Static poster shown briefly until video starts playing */}
       {showFallback && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={autoplayBlocked ? fallbackWebp : poster}
+          src={poster}
           alt="Shiv Ram Sharma"
           loading="eager"
           decoding="async"
           className={`absolute inset-0 h-full w-full object-cover object-[50%_22%] ${brightnessClass}`}
         />
       )}
-      {/* Canvas renders video frames — no native controls ever */}
+      {/* Canvas renders exact MP4 video frames at original 1.0x speed — no native controls ever */}
       <canvas
         ref={canvasRef}
         className={`absolute inset-0 h-full w-full object-cover object-[50%_22%] ${
@@ -286,7 +267,6 @@ export function HeroSection() {
           <MobileCanvasVideo
             key={isLight ? "canvas-light" : "canvas-dark"}
             src={isLight ? "/videos/hero-video-light.mp4" : "/videos/hero-video.mp4"}
-            fallbackWebp={isLight ? "/videos/hero-mobile-light.webp" : "/videos/hero-mobile-dark.webp"}
             poster={isLight ? "/images/hero-mobile-light.jpg" : "/images/hero-mobile-dark.jpg"}
             brightnessClass={isLight ? "brightness-105 contrast-105" : "brightness-110 contrast-105"}
           />
