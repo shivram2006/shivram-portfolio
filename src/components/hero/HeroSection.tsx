@@ -5,6 +5,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { ArrowDown, ArrowRight, Github, Instagram, Linkedin, Mail } from "lucide-react";
 import { portfolioConfig } from "@/config/portfolio.config";
 import { MagneticButton } from "@/components/ui/MagneticButton";
+import { useTheme } from "@/components/providers/ThemeProvider";
 import { EASE_PREMIUM } from "@/lib/motion";
 
 function CharacterReveal({
@@ -55,6 +56,8 @@ function CharacterReveal({
 export function HeroSection() {
   const [mousePos, setMousePos] = useState({ x: 35, y: 45 });
   const prefersReducedMotion = useReducedMotion();
+  const { theme } = useTheme();
+  const isLight = theme === "light";
 
   const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
     if (prefersReducedMotion) return;
@@ -72,30 +75,39 @@ export function HeroSection() {
     <section
       id="home"
       onMouseMove={handleMouseMove}
-      className="relative flex min-h-screen items-center overflow-hidden bg-[#08090D] pb-20 pt-28 text-white"
+      className="relative flex min-h-screen items-center overflow-hidden bg-[#f8fafc] pb-20 pt-28 text-slate-900 transition-colors duration-300 dark:bg-[#08090D] dark:text-white"
     >
-      {/* Full-Bleed Background Video — subject positioned clearly on the right side */}
+      {/* Full-Bleed Background Video — switches automatically with Dark/Light mode */}
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
         <video
-          src="/videos/hero-video.mp4"
+          key={isLight ? "light-video" : "dark-video"}
+          src={isLight ? "/videos/hero-video-light.mp4" : "/videos/hero-video.mp4"}
           autoPlay
           loop
           muted
           playsInline
           preload="auto"
-          className="h-full w-full object-cover object-[70%_20%] brightness-110 contrast-105 lg:translate-x-[15%] lg:scale-[1.04] lg:object-center"
+          className={`h-full w-full object-cover object-[70%_20%] lg:translate-x-[15%] lg:scale-[1.04] lg:object-center ${
+            isLight ? "brightness-105 contrast-105" : "brightness-110 contrast-105"
+          }`}
         />
 
         {/* Subtle left-only gradient scrim behind text so the right side stays crystal clear */}
         <div
           aria-hidden="true"
-          className="absolute inset-y-0 left-0 w-full bg-gradient-to-r from-[#08090D]/85 via-[#08090D]/40 to-transparent lg:w-[62%]"
+          className={`absolute inset-y-0 left-0 w-full bg-gradient-to-r to-transparent lg:w-[62%] ${
+            isLight
+              ? "from-[#f8fafc]/90 via-[#f8fafc]/45"
+              : "from-[#08090D]/85 via-[#08090D]/40"
+          }`}
         />
 
         {/* Gentle bottom edge blend into the next section */}
         <div
           aria-hidden="true"
-          className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#08090D] to-transparent"
+          className={`absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t to-transparent ${
+            isLight ? "from-[#f8fafc]" : "from-[#08090D]"
+          }`}
         />
 
         {/* Interactive Mouse-Following Radial Glow */}
@@ -116,7 +128,7 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: EASE_PREMIUM }}
-            className="mb-7 inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-black/40 px-4 py-1.5 text-xs font-medium text-slate-200 backdrop-blur-md"
+            className="mb-7 inline-flex items-center gap-2.5 rounded-full border border-slate-200/90 bg-white/80 px-4 py-1.5 text-xs font-medium text-slate-700 shadow-sm backdrop-blur-md dark:border-white/15 dark:bg-black/40 dark:text-slate-200"
           >
             <span className="relative flex h-2.5 w-2.5">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
@@ -126,10 +138,10 @@ export function HeroSection() {
           </motion.div>
 
           {/* Main Headline */}
-          <h1 className="text-4xl font-bold leading-[1.08] tracking-tight text-white sm:text-5xl xl:text-[3.75rem]">
+          <h1 className="text-4xl font-bold leading-[1.08] tracking-tight text-slate-900 dark:text-white sm:text-5xl xl:text-[3.75rem]">
             <CharacterReveal text={portfolioConfig.hero.headlineLine1} delayOffset={0.12} />
             <br />
-            <span className="animate-gradient-text bg-gradient-to-r from-blue-400 via-cyan-300 to-violet-400 bg-clip-text text-transparent">
+            <span className="animate-gradient-text bg-gradient-to-r from-blue-600 via-cyan-500 to-violet-600 bg-clip-text text-transparent dark:from-blue-400 dark:via-cyan-300 dark:to-violet-400">
               <CharacterReveal text={portfolioConfig.hero.headlineLine2} delayOffset={0.45} />
             </span>
           </h1>
@@ -139,7 +151,7 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.75, ease: EASE_PREMIUM }}
-            className="mt-6 max-w-xl text-base leading-relaxed text-slate-200 sm:text-lg"
+            className="mt-6 max-w-xl text-base leading-relaxed text-slate-700 dark:text-slate-200 sm:text-lg"
           >
             {portfolioConfig.hero.supportingText}
           </motion.p>
@@ -149,7 +161,7 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.85, ease: EASE_PREMIUM }}
-            className="mt-3 text-xs font-semibold uppercase tracking-[0.2em] text-blue-400"
+            className="mt-3 text-xs font-semibold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400"
           >
             {portfolioConfig.brand.designation}
           </motion.p>
@@ -171,7 +183,7 @@ export function HeroSection() {
 
             <MagneticButton
               onClick={() => scrollToSection("#contact")}
-              className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-7 py-3.5 text-sm font-semibold text-white backdrop-blur-md transition hover:border-blue-400/60 hover:bg-white/20"
+              className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white/85 px-7 py-3.5 text-sm font-semibold text-slate-900 backdrop-blur-md transition hover:border-blue-500/60 hover:bg-white dark:border-white/25 dark:bg-white/10 dark:text-white dark:hover:border-blue-400/60 dark:hover:bg-white/20"
             >
               <span>{portfolioConfig.hero.secondaryCta}</span>
             </MagneticButton>
@@ -198,7 +210,7 @@ export function HeroSection() {
                   target={social.href.startsWith("http") ? "_blank" : undefined}
                   rel={social.href.startsWith("http") ? "noopener noreferrer" : undefined}
                   aria-label={social.label}
-                  className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/35 text-slate-300 backdrop-blur-md transition hover:-translate-y-0.5 hover:border-blue-400/60 hover:text-white"
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white/80 text-slate-700 backdrop-blur-md transition hover:-translate-y-0.5 hover:border-blue-500/50 hover:text-blue-600 dark:border-white/15 dark:bg-black/35 dark:text-slate-300 dark:hover:border-blue-400/60 dark:hover:text-white"
                 >
                   <Icon className="h-4 w-4" />
                 </a>
@@ -216,7 +228,7 @@ export function HeroSection() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.25, duration: 0.6 }}
-        className="absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-2 text-xs font-medium uppercase tracking-[0.2em] text-slate-300 transition hover:text-blue-400"
+        className="absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-2 text-xs font-medium uppercase tracking-[0.2em] text-slate-600 transition hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400"
       >
         <span>Scroll</span>
         <motion.span

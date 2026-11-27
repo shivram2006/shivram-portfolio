@@ -60,16 +60,14 @@ export function Navbar() {
         className={`mx-auto flex max-w-7xl items-center justify-between rounded-2xl px-4 py-3 transition-all duration-300 sm:px-6 ${
           scrolled
             ? "border border-slate-200/80 bg-white/85 shadow-lg shadow-black/5 backdrop-blur-xl dark:border-white/10 dark:bg-[#0B0D14]/85 dark:shadow-black/30"
-            : "border border-white/10 bg-[#08090D]/55 text-white backdrop-blur-md"
+            : "border border-slate-200/60 bg-white/70 text-slate-900 backdrop-blur-md dark:border-white/10 dark:bg-[#08090D]/55 dark:text-white"
         }`}
       >
         {/* Brand Wordmark */}
         <a
           href="#home"
           onClick={(e) => handleLinkClick(e, "#home")}
-          className={`group flex items-center gap-2.5 text-sm font-semibold tracking-[0.26em] ${
-            scrolled ? "text-slate-900 dark:text-white" : "text-white"
-          }`}
+          className="group flex items-center gap-2.5 text-sm font-semibold tracking-[0.26em] text-slate-900 dark:text-white"
         >
           <span className="h-2.5 w-2.5 rounded-full bg-gradient-to-tr from-blue-500 to-violet-500 transition-transform duration-300 group-hover:scale-125" />
           <span>{portfolioConfig.brand.wordmark}</span>
@@ -88,12 +86,8 @@ export function Navbar() {
                   onClick={(e) => handleLinkClick(e, item.href)}
                   className={`relative rounded-lg px-3 py-1.5 text-xs font-medium tracking-wide transition-colors ${
                     isActive
-                      ? scrolled
-                        ? "text-blue-600 dark:text-white"
-                        : "text-white"
-                      : scrolled
-                      ? "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-                      : "text-slate-300 hover:text-white"
+                      ? "text-blue-600 dark:text-white"
+                      : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
                   }`}
                 >
                   {isActive && (
