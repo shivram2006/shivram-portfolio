@@ -62,17 +62,20 @@ function CharacterReveal({
  */
 function MobileCanvasVideo({
   src,
+  fallbackWebp,
   poster,
   brightnessClass,
 }: {
   src: string;
+  fallbackWebp: string;
   poster: string;
   brightnessClass: string;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const rafRef = useRef<number>(0);
-  const [showPoster, setShowPoster] = useState(true);
+  const [showFallback, setShowFallback] = useState(true);
+  const [autoplayBlocked, setAutoplayBlocked] = useState(false);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -83,13 +86,13 @@ function MobileCanvasVideo({
     if (!ctx) return;
 
     let drawing = false;
+    let hasPlayed = false;
 
     const drawFrame = () => {
       if (!video || video.paused || video.ended) {
         drawing = false;
         return;
       }
-      // Set canvas internal resolution to match video (once)
       if (canvas.width !== video.videoWidth && video.videoWidth > 0) {
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
@@ -99,14 +102,15 @@ function MobileCanvasVideo({
     };
 
     const startDrawing = () => {
-      setShowPoster(false);
+      hasPlayed = true;
+      setShowFallback(false);
+      setAutoplayBlocked(false);
       if (!drawing) {
         drawing = true;
         rafRef.current = requestAnimationFrame(drawFrame);
       }
     };
 
-    // Set attributes imperatively for iOS
     video.muted = true;
     video.defaultMuted = true;
     video.playsInline = true;
@@ -114,7 +118,6 @@ function MobileCanvasVideo({
 
     video.addEventListener("playing", startDrawing);
 
-    // Handle pause/resume
     const onPause = () => {
       if (!document.hidden && video) {
         video.play().catch(() => {});
@@ -122,7 +125,6 @@ function MobileCanvasVideo({
     };
     video.addEventListener("pause", onPause);
 
-    // Handle loop restart
     const onEnded = () => {
       if (video) {
         video.currentTime = 0;
@@ -131,15 +133,29 @@ function MobileCanvasVideo({
     };
     video.addEventListener("ended", onEnded);
 
-    // Try autoplay
     const tryPlay = () => {
       video.muted = true;
-      video.play().catch(() => {});
+      const promise = video.play();
+      if (promise !== undefined) {
+        promise.catch(() => {
+          // iOS Low Power Mode or strict autoplay policy blocked <video>:
+          // immediately switch fallback to animated WebP so motion starts with zero interaction.
+          if (!hasPlayed) {
+            setAutoplayBlocked(true);
+          }
+        });
+      }
     };
 
     tryPlay();
 
-    // Retry on visibility change and first interaction
+    // If Safari silently holds the video paused without rejecting within 600ms, show animated WebP
+    const fallbackTimer = window.setTimeout(() => {
+      if (!hasPlayed && video.paused) {
+        setAutoplayBlocked(true);
+      }
+    }, 600);
+
     const onVisibility = () => {
       if (!document.hidden) tryPlay();
     };
@@ -151,6 +167,7 @@ function MobileCanvasVideo({
     window.addEventListener("scroll", onInteract, { once: true, passive: true });
 
     return () => {
+      window.clearTimeout(fallbackTimer);
       cancelAnimationFrame(rafRef.current);
       drawing = false;
       video.removeEventListener("playing", startDrawing);
@@ -165,11 +182,11 @@ function MobileCanvasVideo({
 
   return (
     <>
-      {/* Poster fallback — shown until canvas starts drawing */}
-      {showPoster && (
+      {/* Fallback shown until canvas starts drawing: animated WebP if autoplay blocked (Low Power Mode), else static poster */}
+      {showFallback && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={poster}
+          src={autoplayBlocked ? fallbackWebp : poster}
           alt="Shiv Ram Sharma"
           loading="eager"
           decoding="async"
@@ -179,9 +196,11 @@ function MobileCanvasVideo({
       {/* Canvas renders video frames — no native controls ever */}
       <canvas
         ref={canvasRef}
-        className={`absolute inset-0 h-full w-full object-cover object-[50%_22%] ${brightnessClass}`}
+        className={`absolute inset-0 h-full w-full object-cover object-[50%_22%] ${
+          showFallback ? "opacity-0" : "opacity-100"
+        } ${brightnessClass}`}
       />
-      {/* Hidden video element — feeds frames to canvas, never visible */}
+      {/* Video must NOT be `invisible` or `h-0 w-0` or iOS Safari suspends autoplay until user scroll */}
       <video
         ref={videoRef}
         src={src}
@@ -190,7 +209,7 @@ function MobileCanvasVideo({
         loop
         autoPlay
         preload="auto"
-        className="pointer-events-none invisible absolute h-0 w-0"
+        className="pointer-events-none absolute inset-0 -z-10 h-full w-full opacity-[0.001]"
         tabIndex={-1}
         aria-hidden="true"
       />
@@ -259,7 +278,7 @@ export function HeroSection() {
       className="relative flex min-h-screen flex-col justify-center overflow-hidden bg-[#f8fafc] pb-16 pt-20 text-slate-900 transition-colors duration-300 dark:bg-[#08090D] dark:text-white lg:flex-row lg:items-center lg:pb-20 lg:pt-28"
     >
       {/* Responsive Media Container:
-          - Mobile/Tablet (< lg): Canvas-rendered video — zero native controls, no play button ever
+          - Mobile/Tablet (< lg): Canvas-rendered video + animated WebP fallback — zero native controls, no play button ever
           - Desktop (lg+): Full-HD background <video> positioned on the right side next to text */}
       <div className="pointer-events-none relative z-0 aspect-[16/10] w-full overflow-hidden sm:aspect-[16/9] lg:absolute lg:inset-0 lg:aspect-auto lg:h-full">
         {/* ===== MOBILE / TABLET: CANVAS VIDEO ===== */}
@@ -267,6 +286,7 @@ export function HeroSection() {
           <MobileCanvasVideo
             key={isLight ? "canvas-light" : "canvas-dark"}
             src={isLight ? "/videos/hero-video-light.mp4" : "/videos/hero-video.mp4"}
+            fallbackWebp={isLight ? "/videos/hero-mobile-light.webp" : "/videos/hero-mobile-dark.webp"}
             poster={isLight ? "/images/hero-mobile-light.jpg" : "/images/hero-mobile-dark.jpg"}
             brightnessClass={isLight ? "brightness-105 contrast-105" : "brightness-110 contrast-105"}
           />
