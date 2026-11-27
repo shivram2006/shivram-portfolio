@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowDown, ArrowRight, Github, Instagram, Linkedin, Mail } from "lucide-react";
 import { portfolioConfig } from "@/config/portfolio.config";
@@ -60,6 +60,52 @@ export function HeroSection() {
   const prefersReducedMotion = useReducedMotion();
   const { theme } = useTheme();
   const isLight = theme === "light";
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    // Ensure iOS Safari recognizes muted + inline properties before attempting play
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playsInline = true;
+
+    const tryPlay = () => {
+      if (!video) return;
+      video.muted = true;
+      const promise = video.play();
+      if (promise !== undefined) {
+        promise.catch(() => {
+          // Autoplay blocked (e.g., iOS Low Power Mode) until first user gesture
+        });
+      }
+    };
+
+    tryPlay();
+
+    const onVisibilityChange = () => {
+      if (!document.hidden) {
+        tryPlay();
+      }
+    };
+
+    const onFirstInteraction = () => {
+      tryPlay();
+    };
+
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("touchstart", onFirstInteraction, { once: true, passive: true });
+    window.addEventListener("pointerdown", onFirstInteraction, { once: true, passive: true });
+    window.addEventListener("scroll", onFirstInteraction, { once: true, passive: true });
+
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.removeEventListener("touchstart", onFirstInteraction);
+      window.removeEventListener("pointerdown", onFirstInteraction);
+      window.removeEventListener("scroll", onFirstInteraction);
+    };
+  }, [isLight]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
     if (prefersReducedMotion) return;
@@ -84,14 +130,35 @@ export function HeroSection() {
           - Desktop (lg+): Full-bleed background positioned on the right side next to text */}
       <div className="pointer-events-none relative z-0 aspect-[16/10] w-full overflow-hidden sm:aspect-[16/9] lg:absolute lg:inset-0 lg:aspect-auto lg:h-full">
         <video
+          ref={videoRef}
           key={isLight ? "light-video" : "dark-video"}
           src={isLight ? "/videos/hero-video-light.mp4" : "/videos/hero-video.mp4"}
           autoPlay
           loop
           muted
           playsInline
+          controls={false}
+          disablePictureInPicture
+          disableRemotePlayback
+          controlsList="nodownload noplaybackrate noremoteplayback"
           preload="auto"
-          className={`h-full w-full object-cover object-[50%_22%] lg:translate-x-[15%] lg:scale-[1.04] lg:object-center ${
+          onCanPlay={() => {
+            if (videoRef.current?.paused) {
+              videoRef.current.play().catch(() => {});
+            }
+          }}
+          onPause={() => {
+            if (!document.hidden && videoRef.current) {
+              videoRef.current.play().catch(() => {});
+            }
+          }}
+          onEnded={() => {
+            if (videoRef.current) {
+              videoRef.current.currentTime = 0;
+              videoRef.current.play().catch(() => {});
+            }
+          }}
+          className={`hero-bg-video h-full w-full object-cover object-[50%_22%] lg:translate-x-[15%] lg:scale-[1.04] lg:object-center ${
             isLight ? "brightness-105 contrast-105" : "brightness-110 contrast-105"
           }`}
         />

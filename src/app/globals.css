@@ -88,6 +88,17 @@ body {
   background: rgba(99, 102, 241, 0.55);
 }
 
+/* Hide iOS / Safari native video play/pause overlay on background hero video */
+.hero-bg-video::-webkit-media-controls,
+.hero-bg-video::-webkit-media-controls-panel,
+.hero-bg-video::-webkit-media-controls-play-button,
+.hero-bg-video::-webkit-media-controls-start-playback-button {
+  display: none !important;
+  -webkit-appearance: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
