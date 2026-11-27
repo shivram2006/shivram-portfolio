@@ -125,10 +125,23 @@ export function HeroSection() {
       onMouseMove={handleMouseMove}
       className="relative flex min-h-screen flex-col justify-center overflow-hidden bg-[#f8fafc] pb-16 pt-20 text-slate-900 transition-colors duration-300 dark:bg-[#08090D] dark:text-white lg:flex-row lg:items-center lg:pb-20 lg:pt-28"
     >
-      {/* Responsive Video Container:
-          - Mobile/Tablet (< lg): Clean 16:9 / 16:10 centered showcase above the text so the subject is 100% visible
-          - Desktop (lg+): Full-bleed background positioned on the right side next to text */}
+      {/* Responsive Media Container:
+          - Mobile/Tablet (< lg): Animated WebP <img> so iOS Safari & Low Power Mode NEVER pause or show a play button
+          - Desktop (lg+): Full-HD background <video> positioned on the right side next to text */}
       <div className="pointer-events-none relative z-0 aspect-[16/10] w-full overflow-hidden sm:aspect-[16/9] lg:absolute lg:inset-0 lg:aspect-auto lg:h-full">
+        {/* Mobile & Tablet Animated WebP */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={isLight ? "/videos/hero-mobile-light.webp" : "/videos/hero-mobile-dark.webp"}
+          alt="Shiv Ram Sharma"
+          loading="eager"
+          decoding="async"
+          className={`h-full w-full object-cover object-[50%_22%] lg:hidden ${
+            isLight ? "brightness-105 contrast-105" : "brightness-110 contrast-105"
+          }`}
+        />
+
+        {/* Desktop Full-HD Video */}
         <video
           ref={videoRef}
           key={isLight ? "light-video" : "dark-video"}
@@ -158,7 +171,7 @@ export function HeroSection() {
               videoRef.current.play().catch(() => {});
             }
           }}
-          className={`hero-bg-video h-full w-full object-cover object-[50%_22%] lg:translate-x-[15%] lg:scale-[1.04] lg:object-center ${
+          className={`hero-bg-video hidden h-full w-full object-cover lg:block lg:translate-x-[15%] lg:scale-[1.04] lg:object-center ${
             isLight ? "brightness-105 contrast-105" : "brightness-110 contrast-105"
           }`}
         />
